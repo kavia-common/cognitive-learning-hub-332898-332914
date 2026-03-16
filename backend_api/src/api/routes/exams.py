@@ -30,6 +30,7 @@ router = APIRouter(prefix="/modules/{module_id}/exam", tags=["exam"])
 )
 def get_exam_config(module_id: str, user: AuthUser = Depends(get_current_user)) -> ExamConfigResponse:
     with db_session() as session:
+        # IMPORTANT: module_id is a UUID in the DB, but we accept it as string and let SQLAlchemy/pg cast.
         exam = session.execute(select(Exam).where(Exam.module_id == module_id)).scalar_one_or_none()
         if not exam:
             # If exam row not present, expose default configuration (still consistent with product rules).
