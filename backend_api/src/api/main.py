@@ -73,6 +73,19 @@ def health_check() -> dict[str, Any]:
 
 
 @app.get(
+    "/healthz",
+    tags=["health"],
+    summary="Health check (preview readiness)",
+    description=(
+        "Health endpoint used by the preview system readiness probe. "
+        "Must return 200 when the service is up."
+    ),
+)
+def healthz() -> dict[str, Any]:
+    return {"status": "ok"}
+
+
+@app.get(
     "/docs/exam",
     tags=["exam"],
     summary="Exam API usage notes",
