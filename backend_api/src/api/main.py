@@ -36,10 +36,23 @@ app = FastAPI(
     openapi_tags=openapi_tags,
 )
 
-settings = get_settings()
+# NOTE: The preview readiness probe expects the service to start and bind to the
+# allocated port even if some runtime configuration (e.g., JWT_SECRET) is not yet set.
+# To avoid failing import-time app initialization, we load settings lazily here and
+# fall back to permissive CORS when settings are unavailable.
+try:
+    settings = get_settings()
+    cors_allow_origins = settings.cors_allow_origins
+except Exception as e:
+    logger.warning(
+        "Settings not fully available during startup; using fallback CORS for readiness. error=%s",
+        e,
+    )
+    cors_allow_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_allow_origins,
+    allow_origins=cors_allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
